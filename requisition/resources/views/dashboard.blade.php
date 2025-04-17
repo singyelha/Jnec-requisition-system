@@ -89,14 +89,298 @@
 
     {{-- JavaScript for Tab Switching --}}
     <script>
-         // ... (Keep tab switching JS unchanged) ...
-        document.addEventListener('DOMContentLoaded', () => { const navLinks = document.querySelectorAll('.sidebar .nav-link'); const sections = document.querySelectorAll('.content-area .content-section'); function activateSection(targetId) { sections.forEach(section => { section.id === targetId ? section.classList.add('active') : section.classList.remove('active'); }); } function activateLink(clickedLink) { navLinks.forEach(link => link.classList.remove('active')); if (clickedLink) clickedLink.classList.add('active'); } navLinks.forEach(link => { link.addEventListener('click', function(e) { e.preventDefault(); const targetId = this.getAttribute('data-target'); if (targetId && document.getElementById(targetId)) { activateLink(this); activateSection(targetId); } else { console.warn(`Target section '${targetId}' not found.`);} }); }); const initialActiveLink = document.querySelector('.sidebar .nav-link.active'); const initialTargetId = initialActiveLink?.getAttribute('data-target'); if (initialTargetId && document.getElementById(initialTargetId)) { activateSection(initialTargetId); } else if (navLinks.length > 0) { const firstTargetId = navLinks[0].getAttribute('data-target'); if(firstTargetId && document.getElementById(firstTargetId)) {activateLink(navLinks[0]); activateSection(firstTargetId); } else { if(sections.length > 0) sections[0].classList.add('active'); } } });
+        document.addEventListener('DOMContentLoaded', () => {
+            const navLinks = document.querySelectorAll('.sidebar .nav-link');
+            const sections = document.querySelectorAll('.content-area .content-section');
+
+            function activateSection(targetId) {
+                sections.forEach(section => {
+                    if (section.id === targetId) {
+                        section.classList.add('active');
+                    } else {
+                        section.classList.remove('active');
+                    }
+                });
+                 // Store active tab in localStorage
+                 localStorage.setItem('activeDashboardTab', targetId);
+            }
+
+            function activateLink(clickedLink) {
+                navLinks.forEach(link => link.classList.remove('active'));
+                if (clickedLink) {
+                     clickedLink.classList.add('active');
+                }
+            }
+
+            navLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const targetId = this.getAttribute('data-target');
+                    if (targetId) {
+                        activateLink(this);
+                        activateSection(targetId);
+                    }
+                });
+            });
+
+            // On page load, check localStorage for the last active tab
+            const savedTabId = localStorage.getItem('activeDashboardTab');
+            let initialTargetId = null;
+
+            if (savedTabId && document.getElementById(savedTabId)) {
+                 initialTargetId = savedTabId;
+                 const correspondingLink = document.querySelector(`.sidebar .nav-link[data-target="${savedTabId}"]`);
+                 activateLink(correspondingLink);
+            } else {
+                // Fallback to the first link if no saved tab or saved tab doesn't exist
+                const initialActiveLink = document.querySelector('.sidebar .nav-link.active'); // Check if one is marked active initially in HTML
+                initialTargetId = initialActiveLink?.getAttribute('data-target');
+                 if (!initialTargetId && navLinks.length > 0) { // If none active, activate the first one
+                     initialTargetId = navLinks[0].getAttribute('data-target');
+                     activateLink(navLinks[0]);
+                 }
+            }
+
+             // Activate the determined initial section
+             if (initialTargetId) {
+                activateSection(initialTargetId);
+             } else if (sections.length > 0) {
+                 // Absolute fallback: activate the first section if nothing else works
+                 sections[0].classList.add('active');
+                 if (navLinks.length > 0) navLinks[0].classList.add('active'); // Also activate first link
+             }
+
+        });
+    </script>
+
+    {{-- Embedded JavaScript SPECIFICALLY for the Requisition Form --}}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // --- Form Elements Selection ---
+            const requisitionForm = document.getElementById('new-requisition'); // Using the ID added to the form
+            if (!requisitionForm) { console.error("Requisition form ID 'new-requisition' not found."); return; } // Stop if form not found
+
+            const tableBody = document.getElementById('requisition-items-table')?.getElementsByTagName('tbody')[0];
+            const tableHead = document.getElementById('requisition-items-table')?.getElementsByTagName('thead')[0];
+            const checkboxHeader = tableHead?.querySelector('.th-checkbox-delete');
+            const deleteModeBtn = document.getElementById('delete-mode-btn');
+            const confirmDeleteBtn = document.getElementById('confirm-delete-btn');
+            const cancelDeleteBtn = document.getElementById('cancel-delete-btn');
+            const addRowBtn = document.getElementById('add-row-btn');
+            let isInDeleteMode = false;
+
+            // Basic check if core elements exist
+            if (!tableBody || !tableHead || !checkboxHeader || !deleteModeBtn || !confirmDeleteBtn || !cancelDeleteBtn || !addRowBtn) {
+                 console.warn("One or more requisition form elements (table body/head, buttons, checkbox header) not found. JS functionality might be limited.");
+                 // Do not return here, allow other JS to potentially run
+            }
+
+            // --- Function to Go Back ---
+            window.goBack = function() { history.back(); }
+
+            // --- Function to Renumber Rows ---
+            function renumberRows() {
+                if (!tableBody) return;
+                const allRows = tableBody.getElementsByTagName('tr');
+                for (let i = 0; i < allRows.length; i++) {
+                     const slNoCell = allRows[i].cells[1]; // Sl. No. is the second cell (index 1)
+                     const slNoSpan = slNoCell?.querySelector('.sl-no');
+                     if (slNoSpan) { slNoSpan.textContent = i + 1; }
+                }
+            }
+
+            // --- Function to Toggle Delete Mode ---
+            window.toggleDeleteMode = function(isCancelling = false) {
+                // Ensure all required buttons and table elements exist
+                if (!tableBody || !checkboxHeader || !deleteModeBtn || !confirmDeleteBtn || !cancelDeleteBtn || !addRowBtn) {
+                    console.error("Cannot toggle delete mode: essential elements missing.");
+                    return;
+                 }
+
+                const allRows = tableBody.getElementsByTagName('tr');
+                // Prevent entering delete mode if no rows exist
+                if (!isInDeleteMode && allRows.length === 0 && !isCancelling) {
+                    alert("There are no items to delete.");
+                    return;
+                }
+
+                const enteringDeleteMode = !isInDeleteMode && !isCancelling;
+                const exitingDeleteMode = isInDeleteMode && isCancelling;
+
+                // Only proceed if entering or exiting delete mode
+                 if (enteringDeleteMode || exitingDeleteMode) {
+                    isInDeleteMode = enteringDeleteMode; // Update state
+
+                    // Toggle button visibility and state
+                    deleteModeBtn.style.display = isInDeleteMode ? 'none' : 'inline-block';
+                    confirmDeleteBtn.style.display = isInDeleteMode ? 'inline-block' : 'none';
+                    cancelDeleteBtn.style.display = isInDeleteMode ? 'inline-block' : 'none';
+                    addRowBtn.disabled = isInDeleteMode;
+                    addRowBtn.style.opacity = isInDeleteMode ? '0.6' : '1';
+                    addRowBtn.style.cursor = isInDeleteMode ? 'not-allowed' : 'pointer';
+
+                    // Update checkbox header content/visibility
+                    checkboxHeader.innerHTML = isInDeleteMode ? '<i class="fas fa-trash-alt" style="color: #dc3545;" title="Delete Mode Active"></i>' : '';
+                    checkboxHeader.classList.toggle('delete-mode-active', isInDeleteMode);
+
+                    // Add/Remove checkboxes in table rows
+                    for (let i = 0; i < allRows.length; i++) {
+                        const row = allRows[i];
+                        const checkboxCell = row.cells[0]; // Checkbox is the first cell (index 0)
+                        if (checkboxCell) {
+                            if (isInDeleteMode) {
+                                // Add checkbox if it doesn't exist
+                                if (!checkboxCell.querySelector('.row-checkbox')) {
+                                    const slNo = row.cells[1]?.querySelector('.sl-no')?.textContent || (i + 1); // Get Sl. No. from cell 1
+                                    checkboxCell.innerHTML = `<input type="checkbox" class="row-checkbox" name="select_item_for_delete[]" aria-label="Select item ${slNo} for deletion" value="${i}">`; // Optional: add value=index
+                                }
+                            } else {
+                                checkboxCell.innerHTML = ''; // Clear cell content when exiting delete mode
+                                 // Ensure any previously checked state is cleared visually if needed (though removing removes the input)
+                            }
+                        }
+                    }
+
+                     // Renumber rows when exiting delete mode to ensure correct numbering after potential deletions
+                     if (!isInDeleteMode) {
+                        renumberRows();
+                     }
+                }
+            }
+
+
+            // --- Function to Add Item Row ---
+            window.addItemRow = function() {
+                 if (!tableBody) { console.error("Table body not found, cannot add row."); return; }
+
+                const newRow = tableBody.insertRow(); // Add row to the end
+                const rowCount = tableBody.rows.length;
+                let cellIndex = 0;
+
+                // Cell 0: Checkbox Cell
+                const cellCheckbox = newRow.insertCell(cellIndex++);
+                cellCheckbox.className = 'td-checkbox-delete';
+                if (isInDeleteMode) { // If already in delete mode, add checkbox to new row
+                    cellCheckbox.innerHTML = `<input type="checkbox" class="row-checkbox" name="select_item_for_delete[]" aria-label="Select new item for deletion" value="${rowCount - 1}">`;
+                } else { cellCheckbox.innerHTML = ''; }
+
+                // Cell 1: Sl. No. Cell
+                const cellSlNo = newRow.insertCell(cellIndex++);
+                cellSlNo.className = 'sl-cell';
+                cellSlNo.innerHTML = `<span class="sl-no">${rowCount}</span>`;
+
+                // Cell 2: Item Name
+                const cellItemName = newRow.insertCell(cellIndex++);
+                cellItemName.innerHTML = `<input type="text" class="item-input" name="item_name[]" placeholder="Enter item name" required>`;
+
+                // Cell 3: Description
+                const cellDesc = newRow.insertCell(cellIndex++);
+                cellDesc.innerHTML = `<textarea class="item-input" name="item_description[]" placeholder="Enter description/specs" rows="2"></textarea>`;
+
+                // Cell 4: Quantity
+                const cellQty = newRow.insertCell(cellIndex++);
+                cellQty.innerHTML = `<input type="text" class="item-input" name="item_quantity[]" placeholder="e.g., 5 units" required>`; // Added example placeholder
+
+                // Cell 5: Remarks
+                const cellRemarks = newRow.insertCell(cellIndex++);
+                cellRemarks.innerHTML = `<textarea class="item-input" name="item_remarks[]" placeholder="Enter purpose/remarks" rows="2"></textarea>`;
+
+                // Focus on the first input of the new row for better UX
+                const firstInput = newRow.querySelector('input[name="item_name[]"]');
+                 if(firstInput) firstInput.focus();
+            }
+
+
+            // --- Function to Perform Bulk Delete ---
+            window.performBulkDelete = function() {
+                 if (!tableBody) { console.error("Table body not found, cannot delete rows."); return; }
+
+                // Select checked checkboxes within the designated checkbox cells
+                const selectedCheckboxes = Array.from(tableBody.querySelectorAll('td.td-checkbox-delete input.row-checkbox:checked'));
+
+                if (selectedCheckboxes.length === 0) {
+                    alert('Please select at least one item row to delete.');
+                    return;
+                }
+
+                if (!confirm(`Are you sure you want to delete ${selectedCheckboxes.length} selected item(s)? This action cannot be undone.`)) {
+                    return; // User cancelled
+                }
+
+                // Iterate backwards to safely remove rows without index issues
+                for (let i = selectedCheckboxes.length - 1; i >= 0; i--) {
+                    const checkbox = selectedCheckboxes[i];
+                    const row = checkbox.closest('tr'); // Get the parent <tr> element
+                    if (row) { tableBody.removeChild(row); }
+                }
+
+                // Exit delete mode after deletion is complete (this also handles renumbering)
+                toggleDeleteMode(true); // Pass true to indicate cancellation/exit
+            }
+
+            // --- Form Submit Handler (Client-side validation) ---
+            requisitionForm.addEventListener('submit', function(event) {
+                 let isValid = true;
+                 let firstErrorElement = null;
+
+                 // 1. Check if table has at least one valid row
+                 if (!tableBody || tableBody.rows.length === 0) {
+                     isValid = false;
+                     alert("Please add at least one item to the requisition.");
+                     firstErrorElement = addRowBtn; // Focus add button if table is empty
+                 } else {
+                     // Check if the first item name is filled (basic check)
+                     const firstItemNameInput = tableBody.querySelector('input[name="item_name[]"]');
+                     if (!firstItemNameInput || firstItemNameInput.value.trim() === '') {
+                          isValid = false;
+                          alert("Please fill in the details for the first item.");
+                          firstErrorElement = firstItemNameInput;
+                      }
+                      // You could add more checks here for quantity etc. if needed
+                 }
+
+                 // 2. Use HTML5 checkValidity for other required fields
+                 if (!requisitionForm.checkValidity()) {
+                     isValid = false;
+                      // Find the first invalid element within the form for focusing
+                      if (!firstErrorElement) {
+                          firstErrorElement = requisitionForm.querySelector(':invalid');
+                      }
+                      requisitionForm.reportValidity(); // Show default browser validation messages
+                      alert("Please fill in all required fields (like Date, Department, Name, Designation, and item details).");
+                  }
+
+                 // Prevent submission if any validation failed
+                 if (!isValid) {
+                     event.preventDefault(); // Stop form submission
+                     if (firstErrorElement) {
+                         firstErrorElement.focus(); // Focus the first element with an error
+                     }
+                     return;
+                 }
+
+                 // If all validations pass:
+                 console.log("Client-side validation passed. Submitting form...");
+                 // Optionally: disable submit button to prevent double clicks
+                 const submitButton = requisitionForm.querySelector('.submit-button');
+                 if(submitButton) { submitButton.disabled = true; submitButton.textContent = 'Submitting...'; }
+            });
+
+            // --- Initial Setup ---
+            // Ensure delete mode buttons are hidden on page load
+            if(confirmDeleteBtn) confirmDeleteBtn.style.display = 'none';
+            if(cancelDeleteBtn) cancelDeleteBtn.style.display = 'none';
+            // Ensure checkbox header is initially empty
+            if(checkboxHeader) checkboxHeader.innerHTML = '';
+            // Initial renumbering in case the page loaded with pre-filled rows (e.g., from 'old' input)
+             renumberRows();
+
+        }); // End DOMContentLoaded listener
     </script>
 
     {{-- JavaScript SPECIFICALLY for the Requisition Form --}}
     @push('scripts') {{-- Use @push if layouts/app.blade.php has @stack('scripts') --}}
     <script>
-         // ... (Keep form logic JS unchanged) ...
         document.addEventListener('DOMContentLoaded', function() { const requisitionForm = document.getElementById('new-requisition'); if (!requisitionForm) { return; } const tableBody = document.getElementById('requisition-items-table')?.getElementsByTagName('tbody')[0]; const tableHead = document.getElementById('requisition-items-table')?.getElementsByTagName('thead')[0]; const checkboxHeader = tableHead?.querySelector('.th-checkbox-delete'); const deleteModeBtn = document.getElementById('delete-mode-btn'); const confirmDeleteBtn = document.getElementById('confirm-delete-btn'); const cancelDeleteBtn = document.getElementById('cancel-delete-btn'); const addRowBtn = document.getElementById('add-row-btn'); let isInDeleteMode = false; if (!tableBody || !tableHead || !checkboxHeader || !deleteModeBtn || !confirmDeleteBtn || !cancelDeleteBtn || !addRowBtn) { console.warn("Form elements missing. Add/Delete JS might fail."); } window.goBack = function() { history.back(); } function renumberRows() { if (!tableBody) return; const allRows = tableBody.getElementsByTagName('tr'); for (let i = 0; i < allRows.length; i++) { const slNoCell = allRows[i].cells[1]; const slNoSpan = slNoCell?.querySelector('.sl-no'); if (slNoSpan) { slNoSpan.textContent = i + 1; } } } window.toggleDeleteMode = function(isCancelling = false) { if (!tableBody || !checkboxHeader || !deleteModeBtn || !confirmDeleteBtn || !cancelDeleteBtn || !addRowBtn) return; const allRows = tableBody.getElementsByTagName('tr'); if (!isInDeleteMode && allRows.length === 0 && !isCancelling) { alert("There are no items to delete."); return; } const enteringDeleteMode = !isInDeleteMode && !isCancelling; const exitingDeleteMode = isInDeleteMode && isCancelling; if (enteringDeleteMode || exitingDeleteMode) { isInDeleteMode = enteringDeleteMode; deleteModeBtn.style.display = isInDeleteMode ? 'none' : 'inline-block'; confirmDeleteBtn.style.display = isInDeleteMode ? 'inline-block' : 'none'; cancelDeleteBtn.style.display = isInDeleteMode ? 'inline-block' : 'none'; addRowBtn.disabled = isInDeleteMode; addRowBtn.style.opacity = isInDeleteMode ? '0.6' : '1'; addRowBtn.style.cursor = isInDeleteMode ? 'not-allowed' : 'pointer'; checkboxHeader.innerHTML = isInDeleteMode ? '<i class="fas fa-trash-alt" style="color: #dc3545;" title="Delete Mode Active"></i>' : ''; checkboxHeader.classList.toggle('delete-mode-active', isInDeleteMode); for (let i = 0; i < allRows.length; i++) { const row = allRows[i]; const checkboxCell = row.cells[0]; if (checkboxCell) { if (isInDeleteMode) { if (!checkboxCell.querySelector('.row-checkbox')) { const slNo = row.cells[1]?.querySelector('.sl-no')?.textContent || (i + 1); checkboxCell.innerHTML = `<input type="checkbox" class="row-checkbox" value="${i}" name="select_item_for_delete[]" aria-label="Select item ${slNo} for deletion">`; } } else { checkboxCell.innerHTML = ''; } } } if (!isInDeleteMode) { renumberRows(); } } } window.addItemRow = function() { if (!tableBody) return; const newRow = tableBody.insertRow(); const rowCount = tableBody.rows.length; let cellIndex = 0; const cellCheckbox = newRow.insertCell(cellIndex++); cellCheckbox.className = 'td-checkbox-delete'; if (isInDeleteMode) { cellCheckbox.innerHTML = `<input type="checkbox" class="row-checkbox" value="${rowCount - 1}" name="select_item_for_delete[]" aria-label="Select new item for deletion">`; } else { cellCheckbox.innerHTML = ''; } const cellSlNo = newRow.insertCell(cellIndex++); cellSlNo.className = 'sl-cell'; cellSlNo.innerHTML = `<span class="sl-no">${rowCount}</span>`; const cellItemName = newRow.insertCell(cellIndex++); cellItemName.innerHTML = `<input type="text" class="item-input" name="item_name[]" placeholder="Enter item name" required>`; const cellDesc = newRow.insertCell(cellIndex++); cellDesc.innerHTML = `<textarea class="item-input" name="item_description[]" placeholder="Enter description/specs" rows="2"></textarea>`; const cellQty = newRow.insertCell(cellIndex++); cellQty.innerHTML = `<input type="text" class="item-input" name="item_quantity[]" placeholder="Enter quantity" required>`; const cellRemarks = newRow.insertCell(cellIndex++); cellRemarks.innerHTML = `<textarea class="item-input" name="item_remarks[]" placeholder="Enter purpose/remarks" rows="2"></textarea>`; newRow.querySelector('input[name="item_name[]"]')?.focus(); } window.performBulkDelete = function() { if (!tableBody) return; const selectedCheckboxes = Array.from(tableBody.querySelectorAll('td.td-checkbox-delete input.row-checkbox:checked')); if (selectedCheckboxes.length === 0) { alert('Please select at least one item row to delete.'); return; } if (!confirm(`Are you sure you want to delete ${selectedCheckboxes.length} selected item(s)?`)) { return; } for (let i = selectedCheckboxes.length - 1; i >= 0; i--) { const row = selectedCheckboxes[i].closest('tr'); if (row) { tableBody.removeChild(row); } } toggleDeleteMode(true); } requisitionForm.addEventListener('submit', function(event) { const itemCount = tableBody ? tableBody.rows.length : 0; let hasValidItem = false; if (tableBody && itemCount > 0) { const itemNames = tableBody.querySelectorAll('input[name="item_name[]"]'); itemNames.forEach(input => { if (input.value.trim() !== '') hasValidItem = true; }); } else if (itemCount === 0){ hasValidItem = false; } if (!hasValidItem) { event.preventDefault(); alert("Please add and fill details for at least one item."); tableBody?.querySelector('input[name="item_name[]"]')?.focus(); return; } if (!requisitionForm.checkValidity()) { event.preventDefault(); const firstInvalid = requisitionForm.querySelector(':invalid'); firstInvalid?.focus(); alert("Please fill in all required fields."); return; } const submitButton = requisitionForm.querySelector('.submit-button'); if (submitButton) { submitButton.disabled = true; submitButton.textContent = 'Submitting...'; } console.log("Client-side checks passed. Submitting form..."); }); if(confirmDeleteBtn) confirmDeleteBtn.style.display = 'none'; if(cancelDeleteBtn) cancelDeleteBtn.style.display = 'none'; if(checkboxHeader) checkboxHeader.innerHTML = ''; });
     </script>
     @endpush

@@ -7,9 +7,6 @@
 // Bootstrap
 @import 'bootstrap/scss/bootstrap';
 
-/* ======================================== */
-/* == Dashboard Layout Styles START == */
-/* ======================================== */
 
 .dashboard-container *, .dashboard-container *::before, .dashboard-container *::after {
      box-sizing: border-box;
@@ -30,8 +27,6 @@
     display: flex;
     flex-direction: column;
     flex-shrink: 0;
-
-    /* --- Fixed Positioning --- */
     position: fixed;      /* Make it fixed */
     top: 80px;            /* Position below 80px navbar */
     left: 0;              /* Align to the left */
@@ -99,15 +94,6 @@
     }
 }
 
-/* ====================================== */
-/* == Dashboard Layout Styles END == */
-/* ====================================== */
-
-
-/* ==================================================== */
-/* == Styles SPECIFICALLY for the Requisition Form START == */
-/* ==================================================== */
-
 #requisition-form h1, #requisition-form h2, #requisition-form h4 { color: #333; margin-bottom: 0.5em;}
 #requisition-form p { margin-bottom: 1em; }
 #requisition-form .form-header-jnec { text-align: center; margin-bottom: 20px; }
@@ -151,6 +137,122 @@
 #requisition-form .back-button:hover { background-color: #5a6268; }
  @media (max-width: 768px) { #requisition-form .table-responsive { margin-bottom: 10px; } #requisition-form #requisition-items-table th, #requisition-form #requisition-items-table td { padding: 6px; } #requisition-form #requisition-items-table th.th-checkbox-delete, #requisition-form #requisition-items-table td.td-checkbox-delete { width: 35px; padding: 6px 4px;} #requisition-form #requisition-items-table th.sl-header { width: auto; } #requisition-form #requisition-items-table td .item-input { padding: 5px; font-size: 0.9rem; } #requisition-form .table-actions { justify-content: flex-start; flex-direction: column; align-items: stretch; } #requisition-form .action-btn { width: 100%; margin-left: 0 !important; box-sizing: border-box; text-align: center; } #requisition-form .add-row-btn { order: 3; } #requisition-form .delete-mode-btn { order: 1; } #requisition-form .confirm-delete-btn { order: 1; } #requisition-form .cancel-delete-btn { order: 2; } #requisition-form .form-grid, #requisition-form .requester-grid { grid-template-columns: 1fr; gap: 15px; } #requisition-form .form-submit-actions { flex-direction: column; align-items: stretch; } #requisition-form .submit-button, #requisition-form .back-button { width: 100%; order: 0; } #requisition-form .back-button { margin-bottom: 10px; } }
 
-/* ================================================== */
-/* == Requisition Form Styles END == */
-/* ================================================== */
+
+.dashboard-hod-container { /* Using specific class */
+    display: flex;
+    width: 100%;
+    max-width: 100%;
+    background-color: #f8f9fa;
+}
+
+/* === Sidebar === */
+.sidebar-hod { /* Using specific class */
+    width: 250px;
+    background-color: #343a40;
+    color: #adb5bd;
+    padding: 25px 15px;
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+    min-height: calc(100vh - 80px); /* Adjust 80px based on actual navbar height */
+    overflow-y: auto;
+}
+.sidebar-hod h2 { text-align: center; margin-bottom: 30px; color: #ffffff; font-size: 1.5em; font-weight: bold; padding-bottom: 15px; border-bottom: 1px solid #495057; }
+.sidebar-hod ul { list-style: none; padding: 0; margin: 0; flex-grow: 1; }
+.sidebar-hod ul li { margin-bottom: 8px; }
+.sidebar-hod ul li a.sidebar-nav-link { /* Specific class */
+    color: #adb5bd; text-decoration: none; display: flex; align-items: center; padding: 12px 15px; border-radius: 5px; transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out; font-size: 0.95rem;
+}
+.sidebar-hod ul li a.sidebar-nav-link i.fa-fw { margin-right: 12px; width: 20px; text-align: center; font-size: 1.1em; }
+.sidebar-hod ul li a.sidebar-nav-link:hover { background-color: #495057; color: #ffffff; }
+.sidebar-hod ul li a.sidebar-nav-link.active { background-color: #007bff; color: #ffffff; font-weight: 600; }
+.sidebar-hod .sidebar-footer { padding: 15px 0; border-top: 1px solid #495057; margin-top: auto; text-align: center; }
+.sidebar-hod .sidebar-footer a { color: #adb5bd; text-decoration: none; display: block; padding: 10px; }
+.sidebar-hod .sidebar-footer a:hover { color: #ffffff; }
+
+/* === Content Area === */
+.content-area-hod { /* Using specific class */
+    flex-grow: 1;
+    padding: 30px;
+    background-color: #f8f9fa;
+    overflow-y: auto;
+}
+
+/* Header within the Content Area */
+.content-header-hod { /* Using specific class */
+    background-color: #ffffff; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; border-radius: 8px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); margin-bottom: 25px;
+}
+.content-header-hod .header-title { font-size: 1.2em; font-weight: 600; color: #343a40; }
+.content-header-hod .user-info { display: flex; align-items: center; gap: 15px; font-weight: bold; color: #333; }
+
+/* Content Sections (Tabs) */
+.content-section-hod { display: none; } /* Using specific class */
+.content-section-hod.active { display: block; }
+.content-section-hod h2.section-title { margin-bottom: 20px; color: #34495e; font-size: 1.8em; font-weight: 600; }
+.content-section-hod p { color: #555; font-size: 1rem; margin-bottom: 1rem; }
+.status-summary-hod { background-color: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); margin-bottom: 20px; }
+.status-summary-hod h4 { margin-bottom: 15px; color: #495057; }
+.status-summary-hod ul { list-style: none; padding-left: 0; }
+.status-summary-hod li { margin-bottom: 8px; font-size: 0.95em; }
+.status-summary-hod li span { /* Use Bootstrap badge classes instead if preferred */
+    font-weight: bold; min-width: 30px; display: inline-block; text-align: right; margin-left: 10px;
+}
+
+/* Filter Styling */
+.filter-controls-hod { /* Using specific class */
+    margin-bottom: 25px; background-color: #fff; padding: 15px 20px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); display: flex; align-items: center; gap: 15px; flex-wrap: wrap;
+}
+.filter-controls-hod label { font-weight: 600; color: #555; font-size: 0.9em; margin-bottom: 0; white-space: nowrap; }
+.filter-controls-hod select { /* Bootstrap form-select class is added in HTML now */
+    min-width: 250px; flex-grow: 1; max-width: 450px; /* Allow shrinking/growing */
+}
+
+/* Requisition List & Card Styling */
+.requisition-list-hod { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 25px; } /* Using specific class */
+.requisition-card-hod { background-color: #fff; border: 1px solid #e0e0e0; border-radius: 8px; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.06); display: flex; flex-direction: column; overflow: hidden; transition: box-shadow 0.3s ease; } /* Using specific class */
+.requisition-card-hod:hover { box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1); }
+.requisition-card-hod .card-header { background-color: #f8f9fa; padding: 15px 20px; border-bottom: 1px solid #e0e0e0; display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+.requisition-card-hod .card-header h3 { margin: 0; font-size: 1.05em; color: #2c3e50; font-weight: 600; word-break: break-word; }
+.requisition-card-hod .card-body { padding: 15px 20px; flex-grow: 1; font-size: 0.9em; }
+.requisition-card-hod .card-body p { margin-bottom: 8px; color: #555; }
+.requisition-card-hod .card-body p:last-child { margin-bottom: 0; }
+.requisition-card-hod .card-body p strong { color: #333; font-weight: 600; margin-right: 5px; }
+.requisition-card-hod .card-body .department-info { font-size: 0.9em; color: #6c757d; margin-top: 8px; }
+.requisition-card-hod .card-footer { padding: 12px 20px; background-color: #f8f9fa; border-top: 1px solid #e0e0e0; display: flex; justify-content: flex-end; align-items: center; gap: 8px; }
+/* Status Badge Styles */
+.status-badge { padding: 4px 10px; border-radius: 12px; font-size: 0.75em; font-weight: bold; text-transform: uppercase; color: #fff; white-space: nowrap; }
+.status-badge.pending { background-color: #ffc107; color: #333;}
+.status-badge.approved { background-color: #28a745; }
+.status-badge.rejected { background-color: #dc3545; }
+.status-badge.needs-edit { background-color: #17a2b8; }
+/* Action Button Styles */
+.action-btn-hod { border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 0.85em; font-weight: bold; transition: background-color 0.2s ease, opacity 0.2s ease; color: white; } /* Using specific class */
+.action-btn-hod.approve { background-color: #28a745; }
+.action-btn-hod.reject { background-color: #dc3545; }
+.action-btn-hod.view-edit { background-color: #007bff; }
+.action-btn-hod.approve:hover { background-color: #218838; }
+.action-btn-hod.reject:hover { background-color: #c82333; }
+.action-btn-hod.view-edit:hover { background-color: #0056b3; }
+.action-btn-hod:disabled { background-color: #e9ecef !important; border: 1px solid #ced4da !important; color: #6c757d !important; cursor: not-allowed !important; opacity: 0.7 !important; } /* Use !important carefully if needed to override BS */
+
+
+/* Modal Styling */
+.modal-hod { display: none; position: fixed; z-index: 1050; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0, 0, 0, 0.6); } /* Using specific class */
+.modal-hod .modal-content { background-color: #fefefe; margin: 8% auto; padding: 30px; border: 1px solid #888; width: 90%; max-width: 700px; border-radius: 8px; position: relative; box-shadow: 0 5px 15px rgba(0,0,0,0.3); animation: modalSlideIn 0.4s ease-out; }
+@keyframes modalSlideIn { from { opacity: 0; transform: translateY(-30px); } to { opacity: 1; transform: translateY(0); } }
+.modal-hod .close-btn { color: #aaa; position: absolute; top: 10px; right: 20px; font-size: 28px; font-weight: bold; line-height: 1; cursor: pointer; transition: color 0.2s ease; }
+.modal-hod .close-btn:hover, .modal-hod .close-btn:focus { color: black; text-decoration: none; }
+.modal-hod .modal-content h2 { margin-top: 0; margin-bottom: 20px; color: #34495e; font-size: 1.5em; }
+.modal-hod #modalBodyHod { margin-top: 20px; margin-bottom: 30px; max-height: 60vh; overflow-y: auto; padding-right: 10px; }
+.modal-hod #modalBodyHod label { display: block; margin-bottom: 5px; font-weight: 600; color: #555; font-size: 0.95em; }
+.modal-hod #modalBodyHod input[type="text"], .modal-hod #modalBodyHod input[type="number"], .modal-hod #modalBodyHod input[type="date"], .modal-hod #modalBodyHod textarea, .modal-hod #modalBodyHod select { width: 100%; padding: 10px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 4px; font-size: 1em; background-color: #fff; }
+.modal-hod #modalBodyHod textarea { min-height: 100px; resize: vertical; }
+.modal-hod #modalBodyHod .form-field-group { margin-bottom: 15px; }
+.modal-hod #saveChangesBtnHod { background-color: #28a745; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; font-size: 1em; font-weight: bold; float: right; transition: background-color 0.3s, opacity 0.3s; }
+.modal-hod #saveChangesBtnHod:hover { background-color: #218838; }
+.modal-hod #saveChangesBtnHod:disabled { background-color: #adb5bd; opacity: 0.7; }
+
+/* Responsive Adjustments */
+@media (max-width: 991.98px) { .sidebar-hod { width: 200px; } }
+@media (max-width: 767.98px) { .dashboard-hod-container { flex-direction: column; } .sidebar-hod { width: 100%; min-height: auto; height: auto; position: relative; } .sidebar-hod ul { display: flex; justify-content: space-around; flex-wrap: wrap; flex-grow: 0; } .content-area-hod { width: 100%; padding: 20px; } .content-header-hod { flex-direction: column; gap: 10px; text-align: center; } .requisition-list-hod { grid-template-columns: 1fr; } }
+
